@@ -1,3 +1,5 @@
+use crate::library::populate_library;
+
 mod model;
 mod library;
 mod db;
@@ -5,13 +7,7 @@ mod db;
 
 fn main() {
     db::initialize_database().expect("Failed to initialize database");
-    // let file_path = "song.flac";
+    
     let music_dir = "/home/washington/Music";
-    //let track = library::read::read_track(file_path);
-
-    let tracks = library::scan::scan_files(music_dir);
-    tracks.iter().for_each(|track| {
-        db::append(track).expect("Failed to append track to database");
-    });
-    print!("{:#?}", tracks);
+    populate_library(music_dir);
 }

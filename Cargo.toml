@@ -4,4 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-rodio = "0.21.1"
+rayon = "1.8"
+walkdir = "2.4"
+rusqlite = { version = "0.37", features = ["bundled"] }
+lofty = "0.22.4"
+anyhow = "1.0"

@@ -9,3 +9,4 @@ walkdir = "2.4"
 rusqlite = { version = "0.37", features = ["bundled"] }
 lofty = "0.22.4"
 anyhow = "1.0"
+

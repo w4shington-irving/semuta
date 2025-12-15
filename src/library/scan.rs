@@ -1,5 +1,5 @@
 use rayon::prelude::*;
-use std::path::{Path};
+use std::path::Path;
 use walkdir::WalkDir;
 use crate::model::track::Track;
 use crate::library::read::read_track;
@@ -19,8 +19,14 @@ pub fn scan_files(dir: &str) -> Vec<Track> {
 
             // Check if the file has a supported extension
             if path.is_file() && has_supported_extension(path) {
-                // Read the track metadata
-                Some(read_track(path.to_str().unwrap()))
+                // Attempt to read the track, log errors, and skip invalid files
+                match read_track(path.to_str().unwrap()) {
+                    Ok(track) => Some(track),
+                    Err(e) => {
+                        eprintln!("Error reading track {}: {}", path.display(), e);
+                        None
+                    }
+                }
             } else {
                 None
             }

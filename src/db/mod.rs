@@ -1,5 +1,5 @@
-use crate::db::artists::{add_artist, artist_exists, get_artist_id};
-use crate::db::albums::{add_album, album_exists, get_album_id};
+use crate::db::artists::{add_artist, artist_exists, get_artist_by_name};
+use crate::db::albums::{add_album, album_exists, get_album_by_name};
 use crate::model::track::Track;
 
 pub mod schema;
@@ -18,18 +18,41 @@ pub fn append(track: &Track) -> rusqlite::Result<()> {
     // Check if the artist exists, and add if not
     if !artist_exists(&conn, &track.artist)? {
         add_artist(&conn, &track.artist)?;
-    }
+    } 
 
+    let artist = get_artist_by_name(&conn, &track.artist)?;
     // Get the artist ID
-    let artist_id = get_artist_id(&conn, &track.artist)?.unwrap();
+    
 
     // Check if the album exists, and add if not
-    if !album_exists(&conn, &track.album, artist_id)? {
-        add_album(&conn, &track.album, artist_id)?;
-    }
+    if !album_exists(&conn, &track.album, artist.id)? {
+        add_album(&conn, &track.album, artist.id)?;
+    } 
 
-    // Get the album ID
-    let album_id = get_album_id(&conn, &track.album, artist_id)?.unwrap();
+    let album = get_album_by_name(&conn, &track.album, artist.id)?;
+    
+    
     // Add the track to the database
-    tracks::add_track(&conn, track, album_id)
+    tracks::add_track(&conn, track, album.id)
+}
+
+pub fn get_artists() -> rusqlite::Result<Vec<crate::model::artist::Artist>> {
+    let conn = rusqlite::Connection::open("library.db")?;
+    artists::get_all_artists(&conn)
+}
+
+pub fn get_albums_by_artist_id(artist_id: i64) -> rusqlite::Result<Vec<crate::model::album::Album>> {
+    let conn = rusqlite::Connection::open("library.db")?;
+    albums::get_all_albums_by_artist_id(&conn, artist_id)
+}
+/* 
+pub fn get_albums_by_artist_name(artist_name: &str) -> rusqlite::Result<Vec<crate::model::album::Album>> {
+    let conn = rusqlite::Connection::open("library.db")?;
+    let artist = artists::get_artist_by_name(&conn, artist_name)?;
+    albums::get_all_albums_by_artist_id(&conn, artist.id)
+}
+*/
+pub fn get_tracks_by_album_id(album_id: i64) -> rusqlite::Result<Vec<Track>> {
+    let conn = rusqlite::Connection::open("library.db")?;
+    tracks::get_tracks_by_album_id(&conn, album_id)
 }

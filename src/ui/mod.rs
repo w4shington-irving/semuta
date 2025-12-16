@@ -17,6 +17,13 @@ use ratatui::{
 
 use tui_tree_widget::TreeState;
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum NodeId {
+    Artist(i64),
+    Album(i64),
+    Track(i64),
+}
+
 pub fn display_library() {
     enable_raw_mode().expect("Failed to enable raw mode");
     let mut stdout = io::stdout();
@@ -38,6 +45,8 @@ pub fn display_library() {
             }
             input::handle_key(key_event.code, &mut state);
         }
+
+        // 
     }
 
     disable_raw_mode().expect("Failed to disable raw mode");

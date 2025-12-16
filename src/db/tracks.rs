@@ -38,6 +38,7 @@ pub fn get_tracks_by_album_id(conn: &rusqlite::Connection, album_id: i64) -> rus
             track_number: row.get(3)?,
             duration_secs: row.get(4)?,
             path: row.get(5)?,
+            id: row.get(0)?,
         });
     }
 

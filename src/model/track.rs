@@ -6,4 +6,5 @@ pub struct Track {
     pub track_number: Option<u32>,
     pub duration_secs: u32,
     pub path: String,
+    pub id: i64,
 }

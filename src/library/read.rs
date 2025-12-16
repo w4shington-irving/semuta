@@ -17,6 +17,7 @@ pub fn read_track(file_path: &str) -> Result<Track, Box<dyn Error>> {
         track_number: tag.track().map(|n| n as u32),
         duration_secs: file.properties().duration().as_secs() as u32,
         path: file_path.to_string(),
+        id: 0, // Placeholder, actual ID should be set when stored in the database
     };
 
     Ok(track)

@@ -9,4 +9,6 @@ walkdir = "2.4"
 rusqlite = { version = "0.37", features = ["bundled"] }
 lofty = "0.22.4"
 anyhow = "1.0"
-
+ratatui = "0.29"
+crossterm = "0.29"
+tui-tree-widget = "0.23"

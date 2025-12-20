@@ -9,6 +9,25 @@ use crate::ui::View;
 use crate::db;
 use crate::audio;
 
+pub struct Selected {
+    pub artist_id: Option<i64>,
+    pub artist_index: Option<usize>,
+    pub album_id: Option<i64>,
+    pub album_index: Option<usize>,
+}
+
+impl Selected {
+    pub fn new() -> Self {
+        Self {
+            artist_id: None,
+            artist_index: None,
+            album_id: None,
+            album_index: None,
+        }
+    }
+}
+
+
 pub fn handle_key(key: KeyCode, app: &mut App) {
     match key {
         KeyCode::Up => app.list_state.select_previous(),
@@ -17,12 +36,16 @@ pub fn handle_key(key: KeyCode, app: &mut App) {
         KeyCode::Enter => match app.view {
             View::Artists => {
                 if let Some(i) = app.list_state.selected() {
+                    app.selected.artist_id = Some(app.artists[i].id);
+                    app.selected.artist_index = Some(i);
                     let artist_id = app.artists[i].id;
                     app.load_albums(artist_id);
                 }
             }
             View::Albums { .. } => {
                 if let Some(i) = app.list_state.selected() {
+                    app.selected.album_id = Some(app.albums[i].id);
+                    app.selected.album_index = Some(i);
                     let album_id = app.albums[i].id;
                     app.load_tracks(album_id);
                 }
@@ -49,8 +72,14 @@ pub fn handle_key(key: KeyCode, app: &mut App) {
                 if let Ok(album) = album {
                     app.load_albums(album.artist_id);
                 }
+                app.list_state.select(app.selected.album_index);
             }
-            View::Albums { .. } => app.load_artists(),
+
+            View::Albums { .. } => {
+                app.load_artists();
+                app.list_state.select(app.selected.artist_index);
+            }
+
             View::Artists => {}
         },
         KeyCode::Char('q') => exit(0),

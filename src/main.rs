@@ -18,5 +18,5 @@ fn main() {
 }
 /*
 TODO:
-- Improve UX by storing previous selection indices when navigating views
-- Add audio playback functionality */
+- Add queue
+ */

@@ -1,5 +1,5 @@
 use std::time::Duration;
-use crate::ui::View;
+use crate::ui::{View, input::Selected};
 use crate::model::{track::Track, album::Album, artist::Artist, identifier::{ArtistIdentifier, AlbumIdentifier}};
 use crate::db::{self, tracks};
 use crate::audio;
@@ -18,6 +18,7 @@ use ratatui::widgets::ListState;
 pub struct App {
     pub view: View,
 
+    pub selected: Selected,
     pub artists: Vec<Artist>,
     pub albums: Vec<Album>,
     pub tracks: Vec<Track>,
@@ -33,6 +34,7 @@ impl App {
     pub fn new() -> Self {
         Self {
             view: View::Artists,
+            selected: Selected::new(),
             artists: Vec::new(),
             albums: Vec::new(),
             tracks: Vec::new(),

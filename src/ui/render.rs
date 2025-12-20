@@ -3,8 +3,10 @@ use ratatui::{
     widgets::{Block, Borders, List, ListItem},
 };
 
-use crate::ui::View;
-use crate::app::{App, NowPlaying};
+use crate::{model::artist, ui::View};
+use crate::app::{App};
+use crate::model::identifier::{ArtistIdentifier, AlbumIdentifier};
+use crate::db;
 
 pub fn render_ui(f: &mut Frame, app: &mut App) {
     
@@ -33,9 +35,16 @@ pub fn render_ui(f: &mut Frame, app: &mut App) {
         items.into_iter().map(ListItem::new).collect();
 
     let title = match app.view {
-        View::Artists => "Artists",
-        View::Albums { .. } => "Albums",
-        View::Tracks { .. } => "Tracks",
+        View::Artists => " Library ",
+        View::Albums { .. } => {
+            let artist_name = db::get_artist(&ArtistIdentifier::Id(app.selected.artist_id.unwrap())).expect("Failed to get artist").name;
+            &format!(" {} ", artist_name)
+        },
+        View::Tracks { .. } => {
+            let artist_name = db::get_artist(&ArtistIdentifier::Id(app.selected.artist_id.unwrap())).expect("Failed to get artist").name;
+            let album_name = db::get_album(&AlbumIdentifier::Id(app.selected.album_id.unwrap())).expect("Failed to get album").title;
+            &format!(" {}, {} ", artist_name, album_name)
+        }
     };
 
     let list = List::new(list_items)

@@ -1,4 +1,4 @@
-use crate::{db::{albums::get_album_by_id, artists::get_artist_by_id}, model::{track::Track}};
+use crate::{db::{albums::get_album, artists::get_artist, Identifier}, model::{track::Track}};
 
 pub fn add_track(conn: &rusqlite::Connection, track: &Track, album_id: i64) -> rusqlite::Result<()> {
     conn.execute(
@@ -29,8 +29,8 @@ pub fn get_tracks_by_album_id(conn: &rusqlite::Connection, album_id: i64) -> rus
     while let Some(row) = rows.next()? {
         let track_title: String = row.get(2)?;
         let album_id: i64 = row.get(1)?;
-        let album = get_album_by_id(conn, album_id)?;
-        let artist = get_artist_by_id(conn, album.artist_id)?;
+        let album = get_album(conn, Identifier::Id(album_id), 0)?; // Assuming artist_id is not needed here
+        let artist = get_artist(conn, Identifier::Id(album.artist_id))?;
         tracks.push(Track {
             title: track_title,
             artist: artist.name,

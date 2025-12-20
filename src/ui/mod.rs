@@ -16,6 +16,7 @@ use ratatui::{
 };
 
 use tui_tree_widget::TreeState;
+use crate::app::App;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum NodeId {
@@ -51,4 +52,12 @@ pub fn display_library() {
 
     disable_raw_mode().expect("Failed to disable raw mode");
     execute!(terminal.backend_mut(), LeaveAlternateScreen).expect("Failed to leave alternate screen");
+}
+
+pub fn display_ui() {
+    enable_raw_mode().expect("Failed to enable raw mode");
+    let mut stdout = io::stdout();
+    execute!(stdout, EnterAlternateScreen).expect("Failed to enter alternate screen");
+
+    
 }

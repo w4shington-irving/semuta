@@ -1,11 +1,13 @@
-use crate::db::artists::{add_artist, artist_exists, get_artist_by_name};
-use crate::db::albums::{add_album, album_exists, get_album_by_name};
-use crate::model::track::Track;
+use crate::db::artists::{add_artist, artist_exists, get_artist};
+use crate::db::albums::{add_album, album_exists, get_album};
+use crate::model::{track::Track, identifier::Identifier};
 
 pub mod schema;
 pub mod tracks;
 pub mod albums;
 pub mod artists;
+
+
 
 pub fn initialize_database() -> rusqlite::Result<()> {
     let conn = rusqlite::Connection::open("library.db")?;
@@ -16,20 +18,20 @@ pub fn append(track: &Track) -> rusqlite::Result<()> {
     let conn = rusqlite::Connection::open("library.db")?;
 
     // Check if the artist exists, and add if not
-    if !artist_exists(&conn, &track.artist)? {
+    if !artist_exists(&conn, Identifier::Name((&track.artist)))? {
         add_artist(&conn, &track.artist)?;
     } 
 
-    let artist = get_artist_by_name(&conn, &track.artist)?;
+    let artist = get_artist(&conn, Identifier::Name((&track.artist)))?;
     // Get the artist ID
     
 
     // Check if the album exists, and add if not
-    if !album_exists(&conn, &track.album, artist.id)? {
+    if !album_exists(&conn, Identifier::Name((&track.album)), artist.id)? {
         add_album(&conn, &track.album, artist.id)?;
     } 
 
-    let album = get_album_by_name(&conn, &track.album, artist.id)?;
+    let album = get_album(&conn, Identifier::Name((&track.album)), artist.id)?;
     
     
     // Add the track to the database

@@ -4,7 +4,7 @@ mod model;
 mod library;
 mod db;
 mod ui;
-
+mod app;
 
 fn main() {
     db::initialize_database().expect("Failed to initialize database");
@@ -15,3 +15,7 @@ fn main() {
     ui::display_library();
     
 }
+/*
+TODO:
+- Implement the UI rendering logic in `ui::display_ui()`
+- Implement identifying structures by either name or id with enum variants */

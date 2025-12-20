@@ -1,3 +1,4 @@
+
 use tui_tree_widget::{TreeItem};
 use std::io;
 use crate::{db::{self, get_albums_by_artist_id, get_tracks_by_album_id}};
@@ -30,3 +31,4 @@ pub fn build_tree() -> io::Result<Vec<TreeItem<'static, NodeId>>> {
 
     Ok(artists_vec)
 }
+

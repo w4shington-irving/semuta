@@ -1,4 +1,4 @@
-use crate::model::{album::Album};
+use crate::model::{album::Album, identifier::Identifier};
 
 
 pub fn add_album(conn: &rusqlite::Connection, title: &str, artist_id: i64) -> rusqlite::Result<i64> {
@@ -9,38 +9,46 @@ pub fn add_album(conn: &rusqlite::Connection, title: &str, artist_id: i64) -> ru
     Ok(conn.last_insert_rowid())
 }
 
-pub fn album_exists(conn: &rusqlite::Connection, title: &str, artist_id: i64) -> rusqlite::Result<bool> {
-    let mut stmt = conn.prepare("SELECT 1 FROM albums WHERE title = ?1 AND artist_id = ?2 LIMIT 1")?;
-    let mut rows = stmt.query(rusqlite::params![title, artist_id])?;
-
-    Ok(rows.next()?.is_some())
-}
-
-pub fn get_album_by_id(conn: &rusqlite::Connection, id: i64) -> rusqlite::Result<Album> {
-    let mut stmt = conn.prepare("SELECT id, title, artist_id FROM albums WHERE id = ?1")?;
-    let mut rows = stmt.query(rusqlite::params![id])?;
-
-    while let Some(row) = rows.next()? {
-        return Ok(Album {
-            id: row.get(0)?,
-            artist_id: row.get(2)?,
-            title: row.get(1)?
-        });
+pub fn album_exists(conn: &rusqlite::Connection, identifier: Identifier, artist_id: i64) -> rusqlite::Result<bool> {
+    let mut stmt = conn.prepare("SELECT 1 FROM albums WHERE id = ?1 OR title = ?2 AND artist_id = ?3 LIMIT 1")?;
+    
+    match identifier {
+        Identifier::Id(id) => {
+            let exists: i32 = stmt.query_row(rusqlite::params![id, "", artist_id], |row| row.get(0))?;
+            Ok(exists != 0)
+        },
+        Identifier::Name(name) => {
+            let exists: i32 = stmt.query_row(rusqlite::params!["", name, artist_id], |row| row.get(0))?;
+            Ok(exists != 0)
+        },
     }
-
-    Err(rusqlite::Error::QueryReturnedNoRows)
 }
 
-pub fn get_album_by_name(conn: &rusqlite::Connection, title: &str, artist_id: i64) -> rusqlite::Result<Album> {
-    let mut stmt = conn.prepare("SELECT id, title, artist_id FROM albums WHERE title = ?1 AND artist_id = ?2")?;
-    let mut rows = stmt.query(rusqlite::params![title, artist_id])?;
-
-    while let Some(row) = rows.next()? {
-        return Ok(Album {
-            id: row.get(0)?,
-            artist_id: row.get(2)?,
-            title: row.get(1)?,
-        });
+pub fn get_album(conn: &rusqlite::Connection, identifier: Identifier, artist_id: i64) -> rusqlite::Result<Album> {
+    let mut stmt = conn.prepare("SELECT id, title, artist_id FROM albums WHERE id = ?1 OR name = ?2 AND artist_id = ?3")?;
+    
+    match identifier {
+        Identifier::Id(id) => {
+            let mut rows = stmt.query(rusqlite::params![id, "", artist_id])?;
+            while let Some(row) = rows.next()? {
+                return Ok(Album {
+                    id: row.get(0)?,
+                    artist_id: row.get(2)?,
+                    title: row.get(1)?
+                });
+            }
+        },
+        Identifier::Name(name) => {
+            let mut rows = stmt.query(rusqlite::params![name, "", artist_id])?;
+            while let Some(row) = rows.next()? {
+                return Ok(Album {
+                    id: row.get(0)?,
+                    artist_id: row.get(2)?,
+                    title: row.get(1)?
+                });
+            }
+        },
+    
     }
 
     Err(rusqlite::Error::QueryReturnedNoRows)

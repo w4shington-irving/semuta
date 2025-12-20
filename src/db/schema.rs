@@ -6,7 +6,7 @@ pub fn create_library(conn: &Connection) -> Result<()> {
     conn.execute(
         "CREATE TABLE IF NOT EXISTS artists (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL
+            name TEXT NOT NULL UNIQUE
         )",
         [],
     )?;
@@ -15,8 +15,9 @@ pub fn create_library(conn: &Connection) -> Result<()> {
     conn.execute(
         "CREATE TABLE IF NOT EXISTS albums (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT NOT NULL,
             artist_id INTEGER NOT NULL,
+            title TEXT NOT NULL,
+            UNIQUE(artist_id, title),
             FOREIGN KEY (artist_id) REFERENCES artists(id)
         )",
         [],
@@ -31,6 +32,7 @@ pub fn create_library(conn: &Connection) -> Result<()> {
             track_number INTEGER,
             duration_secs INTEGER NOT NULL,
             path TEXT NOT NULL UNIQUE,
+            UNIQUE(album_id, title),
             FOREIGN KEY (album_id) REFERENCES albums(id)
         )",
         [],

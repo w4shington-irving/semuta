@@ -1,10 +1,13 @@
 #[derive(Debug, Clone)]
 pub struct Track {
     pub title: String,
-    pub album: String,
-    pub artist: String,
+    pub id: i64,
+    pub album_name: String,
+    pub album_id: i64,
+    pub artist_name: String,    
+    pub artist_id: i64,
     pub track_number: Option<u32>,
     pub duration_secs: u32,
     pub path: String,
-    pub id: i64,
 }
+

@@ -1,11 +1,7 @@
-use crate::db;
-
+use std::path::Path;
 pub mod read;
 pub mod scan;
 
 pub fn populate_library(dir: &str) {
-    let tracks = scan::scan_files(dir);
-    tracks.iter().for_each(|track| {
-        db::append(track).expect("Failed to append track to database");
-    });
+    scan::scan_and_append(Path::new(dir));
 }

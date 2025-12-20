@@ -12,12 +12,14 @@ pub fn read_track(file_path: &str) -> Result<Track, Box<dyn Error>> {
     // Extract metadata from the tag
     let track = Track {
         title: tag.title().unwrap_or(std::borrow::Cow::Borrowed("Unknown Title")).to_string(),
-        artist: tag.artist().unwrap_or(std::borrow::Cow::Borrowed("Unknown Artist")).to_string(),
-        album: tag.album().unwrap_or(std::borrow::Cow::Borrowed("Unknown Album")).to_string(),
+        album_name: tag.album().unwrap_or(std::borrow::Cow::Borrowed("Unknown Album")).to_string(),
+        artist_name: tag.artist().unwrap_or(std::borrow::Cow::Borrowed("Unknown Artist")).to_string(),
         track_number: tag.track().map(|n| n as u32),
         duration_secs: file.properties().duration().as_secs() as u32,
         path: file_path.to_string(),
         id: 0, // Placeholder, actual ID should be set when stored in the database
+        album_id: 0, // Placeholder, actual album ID should be set when stored in the database
+        artist_id: 0, // Placeholder, actual artist ID should be set when stored in the database
     };
 
     Ok(track)

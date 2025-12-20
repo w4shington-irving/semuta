@@ -12,10 +12,10 @@ fn main() {
     let music_dir = "/home/washington/Music";
     populate_library(music_dir);
     
-    ui::display_library();
+    ui::start();
     
 }
 /*
 TODO:
-- Implement the UI rendering logic in `ui::display_ui()`
-- Implement identifying structures by either name or id with enum variants */
+- Improve UX by storing previous selection indices when navigating views
+- Add audio playback functionality */

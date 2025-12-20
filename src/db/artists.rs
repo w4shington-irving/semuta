@@ -1,9 +1,11 @@
 use crate::model::artist::Artist;
-use crate::db::Identifier;
+use crate::model::identifier::ArtistIdentifier;
+use rusqlite::{Connection};
+
 
 pub fn add_artist(conn: &rusqlite::Connection, name: &str) -> rusqlite::Result<i64> {
     conn.execute(
-        "INSERT INTO artists (name) VALUES (?1)",
+        "INSERT OR IGNORE INTO artists (name) VALUES (?1)",
         rusqlite::params![name],
     )?;
 
@@ -11,10 +13,10 @@ pub fn add_artist(conn: &rusqlite::Connection, name: &str) -> rusqlite::Result<i
     Ok(conn.last_insert_rowid())
 }
 
-pub fn get_artist(conn: &rusqlite::Connection, identifier: Identifier) -> rusqlite::Result<Artist> {
+pub fn get_artist_internal(conn: &Connection, identifier: &ArtistIdentifier) -> rusqlite::Result<Artist> {
     let mut stmt = conn.prepare("SELECT id, name FROM artists WHERE id = ?1 OR name = ?2")?;
     match identifier {
-        Identifier::Id(id) => {
+        ArtistIdentifier::Id(id) => {
             let mut rows = stmt.query(rusqlite::params![id, ""])?;
             if let Some(row) = rows.next()? {
                 return Ok(Artist {
@@ -24,7 +26,7 @@ pub fn get_artist(conn: &rusqlite::Connection, identifier: Identifier) -> rusqli
             }
             Err(rusqlite::Error::QueryReturnedNoRows)
         },
-        Identifier::Name(name) => {
+        ArtistIdentifier::Name(name) => {
             let mut rows = stmt.query(rusqlite::params!["", name])?;
             if let Some(row) = rows.next()? {
                 return Ok(Artist {
@@ -38,19 +40,20 @@ pub fn get_artist(conn: &rusqlite::Connection, identifier: Identifier) -> rusqli
     
 }
 
-pub fn artist_exists(conn: &rusqlite::Connection, identifier: Identifier) -> rusqlite::Result<bool> {
-    let mut stmt = conn.prepare("SELECT 1 FROM artists WHERE name = ?1 LIMIT 1")?;
-    match identifier {
-        Identifier::Id(id) => {
-            let exists: i32 = stmt.query_row(rusqlite::params![id], |row| row.get(0))?;
-            Ok(exists != 0)
-        },
-        Identifier::Name(name) => {
-            let exists: i32 = stmt.query_row(rusqlite::params![name], |row| row.get(0))?;
-            Ok(exists != 0)
-        },
+pub fn artist_exists(conn: &Connection, id: ArtistIdentifier) -> rusqlite::Result<bool> {
+    match id {
+        ArtistIdentifier::Id(id) => {
+            let mut stmt = conn.prepare("SELECT 1 FROM artists WHERE id = ?1 LIMIT 1")?;
+            Ok(stmt.exists([id])?)
+        }
+        ArtistIdentifier::Name(name) => {
+            let mut stmt = conn.prepare("SELECT 1 FROM artists WHERE name = ?1 LIMIT 1")?;
+            Ok(stmt.exists([name])?)
+        }
     }
 }
+
+
 
 pub fn get_all_artists(conn: &rusqlite::Connection) -> rusqlite::Result<Vec<Artist>> {
     let mut stmt = conn.prepare("SELECT id, name FROM artists")?;

@@ -1,6 +1,8 @@
-use crate::db::artists::{add_artist, artist_exists, get_artist};
-use crate::db::albums::{add_album, album_exists, get_album};
-use crate::model::{track::Track, identifier::Identifier};
+use crate::db::artists::{add_artist, artist_exists, get_artist_internal};
+use crate::db::albums::{add_album, album_exists};
+use crate::model::{album, artist};
+use crate::model::track::Track;
+use crate::model::identifier::{ArtistIdentifier, AlbumIdentifier, TrackIdentifier};
 
 pub mod schema;
 pub mod tracks;
@@ -14,28 +16,41 @@ pub fn initialize_database() -> rusqlite::Result<()> {
     schema::create_library(&conn)
 }
 
+pub fn get_artist(artist_identifier: &ArtistIdentifier) -> rusqlite::Result<crate::model::artist::Artist> {
+    let conn = rusqlite::Connection::open("library.db")?;
+    artists::get_artist_internal(&conn, artist_identifier)
+}
+
+pub fn get_album(album_identifier: &AlbumIdentifier) -> rusqlite::Result<crate::model::album::Album> {
+    let conn = rusqlite::Connection::open("library.db")?;
+    albums::get_album_internal(&conn, album_identifier)
+}
+
+pub fn get_track(track_identifier: &TrackIdentifier) -> rusqlite::Result<crate::model::track::Track> {
+    let conn = rusqlite::Connection::open("library.db")?;
+    tracks::get_track_internal(&conn, track_identifier)
+}
+
+
+
 pub fn append(track: &Track) -> rusqlite::Result<()> {
     let conn = rusqlite::Connection::open("library.db")?;
-
-    // Check if the artist exists, and add if not
-    if !artist_exists(&conn, Identifier::Name((&track.artist)))? {
-        add_artist(&conn, &track.artist)?;
-    } 
-
-    let artist = get_artist(&conn, Identifier::Name((&track.artist)))?;
-    // Get the artist ID
     
+    if !artist_exists(&conn, ArtistIdentifier::Name(&track.artist_name))? {
+        add_artist(&conn, &track.artist_name)?;
+    }
+    let artist = get_artist(&ArtistIdentifier::Name(&track.artist_name))?;
 
-    // Check if the album exists, and add if not
-    if !album_exists(&conn, Identifier::Name((&track.album)), artist.id)? {
-        add_album(&conn, &track.album, artist.id)?;
-    } 
+    if !album_exists(&conn, AlbumIdentifier::Name { name: &track.album_name, artist_id: artist.id })? {
+        add_album(&conn, &track.album_name, artist.id)?;
+    }
+    let album = get_album(&AlbumIdentifier::Name { name: &track.album_name, artist_id: artist.id })?;
 
-    let album = get_album(&conn, Identifier::Name((&track.album)), artist.id)?;
-    
-    
+
     // Add the track to the database
-    tracks::add_track(&conn, track, album.id)
+    tracks::add_track(&conn, track, album.id)?;
+    
+    Ok(())
 }
 
 pub fn get_artists() -> rusqlite::Result<Vec<crate::model::artist::Artist>> {
@@ -43,18 +58,13 @@ pub fn get_artists() -> rusqlite::Result<Vec<crate::model::artist::Artist>> {
     artists::get_all_artists(&conn)
 }
 
-pub fn get_albums_by_artist_id(artist_id: i64) -> rusqlite::Result<Vec<crate::model::album::Album>> {
+
+pub fn get_albums(artist_identifier: &ArtistIdentifier) -> rusqlite::Result<Vec<crate::model::album::Album>> {
     let conn = rusqlite::Connection::open("library.db")?;
-    albums::get_all_albums_by_artist_id(&conn, artist_id)
+    albums::get_albums_by_artist_internal(&conn, &artist_identifier)
 }
-/* 
-pub fn get_albums_by_artist_name(artist_name: &str) -> rusqlite::Result<Vec<crate::model::album::Album>> {
+
+pub fn get_tracks(album_identifier: &AlbumIdentifier) -> rusqlite::Result<Vec<Track>> {
     let conn = rusqlite::Connection::open("library.db")?;
-    let artist = artists::get_artist_by_name(&conn, artist_name)?;
-    albums::get_all_albums_by_artist_id(&conn, artist.id)
-}
-*/
-pub fn get_tracks_by_album_id(album_id: i64) -> rusqlite::Result<Vec<Track>> {
-    let conn = rusqlite::Connection::open("library.db")?;
-    tracks::get_tracks_by_album_id(&conn, album_id)
+    tracks::get_tracks_by_album_internal(&conn, &album_identifier)
 }

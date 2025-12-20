@@ -14,7 +14,18 @@ pub fn render_ui(f: &mut Frame, app: &mut App) {
     let items = match app.view {
         View::Artists => app.artists.iter().map(|a| a.name.clone()).collect(),
         View::Albums { .. } => app.albums.iter().map(|a| a.title.clone()).collect(),
-        View::Tracks { .. } => app.tracks.iter().map(|t| t.title.clone()).collect(),
+        View::Tracks { .. } => {
+            let mut sorted_tracks: Vec<_> = app.tracks.clone();
+            sorted_tracks.sort_by_key(|t| t.track_number.unwrap_or(0));
+            sorted_tracks
+                .iter()
+                .map(|t| {
+                    let number = t.track_number.unwrap_or(0); // fallback if missing
+                    format!("{}. {}", number, t.title)
+                })
+                .collect::<Vec<String>>()
+
+            },
         _ => Vec::new(),
     };
 

@@ -5,6 +5,7 @@ mod library;
 mod db;
 mod ui;
 mod app;
+mod audio;
 
 fn main() {
     db::initialize_database().expect("Failed to initialize database");

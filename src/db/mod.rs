@@ -66,5 +66,7 @@ pub fn get_albums(artist_identifier: &ArtistIdentifier) -> rusqlite::Result<Vec<
 
 pub fn get_tracks(album_identifier: &AlbumIdentifier) -> rusqlite::Result<Vec<Track>> {
     let conn = rusqlite::Connection::open("library.db")?;
-    tracks::get_tracks_by_album_internal(&conn, &album_identifier)
+    let mut tracks = tracks::get_tracks_by_album_internal(&conn, &album_identifier)?;
+    tracks.sort_by_key(|t| t.track_number.unwrap_or(0));
+    Ok(tracks)
 }

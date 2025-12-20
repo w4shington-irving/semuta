@@ -7,6 +7,7 @@ use crate::db::get_album;
 use crate::model::{album::Album, identifier::AlbumIdentifier};
 use crate::ui::View;
 use crate::db;
+use crate::audio;
 
 pub fn handle_key(key: KeyCode, app: &mut App) {
     match key {
@@ -28,12 +29,18 @@ pub fn handle_key(key: KeyCode, app: &mut App) {
             }
             View::Tracks { .. } => {
                 if let Some(i) = app.list_state.selected() {
+                    app.stop();
                     let track = app.tracks[i].clone();
-                    app.now_playing = Some(track);
-                    // future: audio::play(track)
+                    app.play(track);
+                    
                 }
             }
         },
+        KeyCode::Char(' ') => app.toggle_play_pause(),
+        
+        KeyCode::Char('p') => app.pause(),
+        KeyCode::Char('r') => app.resume(),
+        KeyCode::Char('s') => app.stop(),
 
         KeyCode::Backspace => match app.view {
             View::Tracks { album_id } => {
@@ -50,3 +57,5 @@ pub fn handle_key(key: KeyCode, app: &mut App) {
         _ => {}
     }
 }
+
+

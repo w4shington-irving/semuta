@@ -82,7 +82,6 @@ pub fn build_library_panel(app: &'_ App) -> LibraryPanel<'_> {
                 })
                 .collect()
         },
-        _ => Vec::new(),
     };
 
     let list_items: Vec<ListItem> = items.into_iter().map(ListItem::new).collect();

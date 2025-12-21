@@ -3,11 +3,9 @@ use std::process::exit;
 use crossterm::event::KeyCode;
 
 use crate::app::App;
-use crate::db::get_album;
-use crate::model::{album::Album, identifier::AlbumIdentifier};
+use crate::model::identifier::AlbumIdentifier;
 use crate::ui::View;
 use crate::db;
-use crate::audio;
 
 pub struct Selected {
     pub artist_id: Option<i64>,
@@ -49,7 +47,7 @@ pub fn handle_key(key: KeyCode, app: &mut App) {
                     app.load_tracks(album_id);
                 }
             }
-            View::Tracks { album_id } => {}
+            View::Tracks { album_id: _ } => {}
         },
         KeyCode::Enter => match app.view {
             View::Artists => {

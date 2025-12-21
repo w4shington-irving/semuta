@@ -12,6 +12,7 @@ pub enum AlbumIdentifier<'a> {
 }
 
 #[derive(Debug, Clone)]
+#[allow(unused)]
 pub enum TrackIdentifier<'a> {
     Id(i64),
     Name{name: &'a str, album_id: i64},

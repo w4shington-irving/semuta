@@ -1,4 +1,5 @@
 #[derive(Debug, Clone)]
+#[allow(unused)]
 pub struct Track {
     pub title: String,
     pub id: i64,

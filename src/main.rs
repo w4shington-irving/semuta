@@ -18,6 +18,5 @@ fn main() {
 }
 /*
 TODO:
-- Add queue
-- Display now playing track
+- Fix breaking tracks (eg. Pink Floyd - The Dark Side of the Moon)
  */

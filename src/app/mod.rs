@@ -88,6 +88,7 @@ impl App {
 
     fn on_track_finished(&mut self) {
         // For now, just clear state
+        self.previous_tracks.push(self.now_playing.as_ref().unwrap().track.clone());
         self.now_playing = None;
 
         if !self.queue.is_empty() {
@@ -165,7 +166,7 @@ impl App {
         } 
     }
     pub fn play_next(&mut self) {
-        self.previous_tracks.push(self.now_playing.as_ref().unwrap().track.clone());
+        
         if !self.queue.is_empty() {
             let track = self.queue.remove(0);
             self.play(track);

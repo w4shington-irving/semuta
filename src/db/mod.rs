@@ -1,5 +1,6 @@
 use crate::db::artists::{add_artist, artist_exists, get_artist_internal};
 use crate::db::albums::{add_album, album_exists};
+use crate::db::tracks::{add_track, track_exists};
 use crate::model::{album, artist};
 use crate::model::track::Track;
 use crate::model::identifier::{ArtistIdentifier, AlbumIdentifier, TrackIdentifier};
@@ -48,7 +49,10 @@ pub fn append(track: &Track) -> rusqlite::Result<()> {
 
 
     // Add the track to the database
-    tracks::add_track(&conn, track, album.id)?;
+    if !track_exists(&conn, TrackIdentifier::Name { name: &track.title, album_id: album.id })? {
+        add_track(&conn, track, album.id)?;
+    }
+    
     
     Ok(())
 }

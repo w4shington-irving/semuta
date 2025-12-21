@@ -83,6 +83,7 @@ pub fn handle_key(key: KeyCode, app: &mut App) {
         
         KeyCode::Char(' ') => app.toggle_play_pause(),
         KeyCode::F(10) => app.play_next(),
+        KeyCode::F(8) => app.play_previous(),
         KeyCode::Char('p') => app.pause(),
         KeyCode::Char('r') => app.resume(),
         KeyCode::Char('s') => app.stop(),

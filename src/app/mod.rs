@@ -35,6 +35,7 @@ pub struct App {
     pub albums: Vec<Album>,
     pub tracks: Vec<Track>,
 
+    pub previous_tracks: Vec<Track>,
     pub queue: Vec<Track>,
     pub list_state: ListState,
 
@@ -54,6 +55,7 @@ impl App {
             list_state: ListState::default(),
             player: Player::new().expect("Failed to create audio player"),
             queue: Vec::new(),
+            previous_tracks: Vec::new(),
             now_playing: None,
             was_playing: false,
         }
@@ -142,6 +144,7 @@ impl App {
 
     pub fn clear_queue(&mut self) {
         self.queue.clear();
+        self.previous_tracks.clear();
     }
 
     pub fn resume(&mut self) {
@@ -155,7 +158,14 @@ impl App {
         self.now_playing = None;
     }
 
+    pub fn play_previous(&mut self) {
+        if !self.previous_tracks.is_empty() {
+            let track = self.previous_tracks.pop().unwrap();
+            self.play(track);
+        } 
+    }
     pub fn play_next(&mut self) {
+        self.previous_tracks.push(self.now_playing.as_ref().unwrap().track.clone());
         if !self.queue.is_empty() {
             let track = self.queue.remove(0);
             self.play(track);

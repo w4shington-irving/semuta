@@ -30,7 +30,7 @@ pub fn render_ui(f: &mut Frame, app: &mut App) {
     );
 
     f.render_widget(
-        List::new(queue_panel.items).block(Block::default().borders(Borders::ALL).title("Queue")),
+        List::new(queue_panel.items).block(Block::default().borders(Borders::ALL).title(" Queue ")),
         top_chunks[1],
     );
 

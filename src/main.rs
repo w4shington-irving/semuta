@@ -39,6 +39,10 @@ fn main() {
 }
 /*
 TODO:
-- Add playlists
+- Make the UI more readable (make tracks bold)
+- Support global shortcuts (eg. play/pause, next, previous)
 - Fix breaking tracks (eg. Pink Floyd - The Dark Side of the Moon)
+- Add playlists
+- Add search
+- Add shuffle
  */

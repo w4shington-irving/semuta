@@ -160,13 +160,24 @@ impl App {
     }
 
     pub fn play_previous(&mut self) {
+        
         if !self.previous_tracks.is_empty() {
             let track = self.previous_tracks.pop().unwrap();
+            if let Some(now) = &self.now_playing {
+                let mut v: Vec<Track> = Vec::new();
+                v.push(now.track.clone());
+                v.append(&mut self.queue.clone());
+                self.queue = v;
+            }
             self.play(track);
         } 
     }
     pub fn play_next(&mut self) {
-        
+        if let Some(now) = &self.now_playing {
+                let mut v: Vec<Track> = Vec::new();
+                v.push(now.track.clone());
+                self.previous_tracks.append(&mut v);
+            }
         if !self.queue.is_empty() {
             let track = self.queue.remove(0);
             self.play(track);

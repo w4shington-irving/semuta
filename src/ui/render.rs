@@ -1,56 +1,46 @@
 use ratatui::{
+    backend::Backend,
+    layout::{Constraint, Direction, Layout},
+    widgets::{Block, Borders, List, ListItem, Paragraph},
     Frame,
-    widgets::{Block, Borders, List, ListItem},
 };
 
-use crate::{model::artist, ui::View};
+use crate::{model::artist, ui::View, ui::build::{build_library_panel, build_queue_panel, build_now_playing}};
 use crate::app::{App};
 use crate::model::identifier::{ArtistIdentifier, AlbumIdentifier};
 use crate::db;
 
 pub fn render_ui(f: &mut Frame, app: &mut App) {
-    
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Percentage(80), Constraint::Length(3)])
+        .split(f.area());
 
-    let size = f.area();
+    // Top: library + queue
+    let top_chunks = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([Constraint::Percentage(70), Constraint::Percentage(30)])
+        .split(chunks[0]);
 
-    let items = match app.view {
-        View::Artists => app.artists.iter().map(|a| a.name.clone()).collect(),
-        View::Albums { .. } => app.albums.iter().map(|a| a.title.clone()).collect(),
-        View::Tracks { .. } => {
-            let mut sorted_tracks: Vec<_> = app.tracks.clone();
-            sorted_tracks.sort_by_key(|t| t.track_number.unwrap_or(0));
-            sorted_tracks
-                .iter()
-                .map(|t| {
-                    let number = t.track_number.unwrap_or(0); // fallback if missing
-                    format!("{}. {}", number, t.title)
-                })
-                .collect::<Vec<String>>()
+    let lib_panel = build_library_panel(app);
+    let queue_panel = build_queue_panel(app);
 
-            },
-        _ => Vec::new(),
-    };
+    f.render_stateful_widget(
+        List::new(lib_panel.items).block(Block::default().borders(Borders::ALL).title(lib_panel.title)).highlight_symbol("▶ "),
+        top_chunks[0],
+        &mut app.list_state.clone(),
+    );
 
-    let list_items: Vec<ListItem> =
-        items.into_iter().map(ListItem::new).collect();
+    f.render_widget(
+        List::new(queue_panel.items).block(Block::default().borders(Borders::ALL).title("Queue")),
+        top_chunks[1],
+    );
 
-    let title = match app.view {
-        View::Artists => " Library ",
-        View::Albums { .. } => {
-            let artist_name = db::get_artist(&ArtistIdentifier::Id(app.selected.artist_id.unwrap())).expect("Failed to get artist").name;
-            &format!(" {} ", artist_name)
-        },
-        View::Tracks { .. } => {
-            let artist_name = db::get_artist(&ArtistIdentifier::Id(app.selected.artist_id.unwrap())).expect("Failed to get artist").name;
-            let album_name = db::get_album(&AlbumIdentifier::Id(app.selected.album_id.unwrap())).expect("Failed to get album").title;
-            &format!(" {}, {} ", artist_name, album_name)
-        }
-    };
+    // Bottom: now playing
+    let now_playing_panel = build_now_playing(app);
 
-    let list = List::new(list_items)
-        .block(Block::default().borders(Borders::ALL).title(title))
-        .highlight_symbol("▶ ");
+    let now_playing_widget = Paragraph::new(now_playing_panel.text)
+        .block(Block::default().borders(Borders::ALL).title("Now Playing"));
 
-    f.render_stateful_widget(list, size, &mut app.list_state);
+    f.render_widget(now_playing_widget, chunks[1]);
 }
-

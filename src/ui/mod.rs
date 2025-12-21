@@ -22,6 +22,7 @@ pub enum View {
 
 pub mod render;
 pub mod input;
+pub mod build;
 
 
 
@@ -51,6 +52,8 @@ pub fn start() -> io::Result<()> {
             
             input::handle_key(key_event.code, &mut app);
         }
+
+        app.update();
     }
 
     disable_raw_mode()?;

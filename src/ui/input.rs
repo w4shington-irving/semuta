@@ -32,8 +32,7 @@ pub fn handle_key(key: KeyCode, app: &mut App) {
     match key {
         KeyCode::Up => app.list_state.select_previous(),
         KeyCode::Down => app.list_state.select_next(),
-
-        KeyCode::Enter => match app.view {
+        KeyCode::Right => match app.view {
             View::Artists => {
                 if let Some(i) = app.list_state.selected() {
                     app.selected.artist_id = Some(app.artists[i].id);
@@ -50,6 +49,28 @@ pub fn handle_key(key: KeyCode, app: &mut App) {
                     app.load_tracks(album_id);
                 }
             }
+            View::Tracks { album_id } => {}
+        },
+        KeyCode::Enter => match app.view {
+            View::Artists => {
+                if let Some(i) = app.list_state.selected() {
+                    app.selected.artist_id = Some(app.artists[i].id);
+                    app.selected.artist_index = Some(i);
+                    let artist_id = app.artists[i].id;
+                    app.load_albums(artist_id);
+                }
+            }
+            View::Albums { .. } => {
+                if let Some(i) = app.list_state.selected() {
+                    app.selected.album_id = Some(app.albums[i].id);
+                    app.selected.album_index = Some(i);
+                    let album_id = app.albums[i].id;
+                    app.load_tracks(album_id);
+                    let mut tracks = app.tracks.clone();
+                    app.enqueue(&mut tracks);
+
+                }
+            }
             View::Tracks { .. } => {
                 if let Some(i) = app.list_state.selected() {
                     app.stop();
@@ -59,8 +80,9 @@ pub fn handle_key(key: KeyCode, app: &mut App) {
                 }
             }
         },
-        KeyCode::Char(' ') => app.toggle_play_pause(),
         
+        KeyCode::Char(' ') => app.toggle_play_pause(),
+        KeyCode::F(10) => app.play_next(),
         KeyCode::Char('p') => app.pause(),
         KeyCode::Char('r') => app.resume(),
         KeyCode::Char('s') => app.stop(),

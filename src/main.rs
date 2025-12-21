@@ -19,4 +19,5 @@ fn main() {
 /*
 TODO:
 - Add queue
+- Display now playing track
  */

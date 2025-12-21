@@ -6,11 +6,22 @@ use crate::audio;
 use rodio::queue;
 use rodio::{OutputStream, Sink, stream::OutputStreamBuilder};
 use std::sync::Arc;
+use audio::Player;
 
 
 pub struct NowPlaying {
-    pub sink: Arc<Sink>,        // controls playback
-    pub track: Track,
+        // controls playback
+    pub track: Option<Track>,
+    pub position: u64,
+}
+
+impl NowPlaying {
+    pub fn new() -> Self {
+        Self {
+            track: None,
+            position: 0,
+        }
+    }
 }
 
 use ratatui::widgets::ListState;
@@ -26,8 +37,9 @@ pub struct App {
     pub queue: Vec<Track>,
     pub list_state: ListState,
 
-    pub output: OutputStream,
-    pub now_playing: Option<NowPlaying>,
+    pub player: Player,
+    pub now_playing: NowPlaying,
+    was_playing: bool,
 }
 
 impl App {
@@ -39,12 +51,38 @@ impl App {
             albums: Vec::new(),
             tracks: Vec::new(),
             list_state: ListState::default(),
-            output: OutputStreamBuilder::open_default_stream().expect("Failed to open audio output stream"),
+            player: Player::new().expect("Failed to create audio player"),
             queue: Vec::new(),
-            now_playing: None,
+            now_playing: NowPlaying::new(),
+            was_playing: false,
         }
     }
     
+    pub fn update(&mut self) {
+
+        let is_playing_now =
+            !self.player.is_idle() && !self.player.is_paused();
+
+        // Detect: playing → finished
+        if self.was_playing && self.player.is_idle() {
+            self.on_track_finished();
+        }
+
+        self.was_playing = is_playing_now;
+
+    }
+
+    fn on_track_finished(&mut self) {
+        // For now, just clear state
+        self.now_playing.track = None;
+
+        if !self.queue.is_empty() {
+            // Play next track
+            self.play_next();
+        }
+
+    }
+
     pub fn load_artists(&mut self) {
         self.artists = db::get_artists().expect("Failed to get artists");
         self.list_state.select(Some(0));
@@ -64,45 +102,54 @@ impl App {
             
     }
 
-    pub fn enqueue(&mut self, track: Track) {
-        self.queue.push(track);
-    }
-
-    pub fn play(&mut self, track: Track) {
+    pub fn enqueue(&mut self, tracks: &mut Vec<Track>) {
+        if self.queue.is_empty() && !tracks.is_empty() {
+            let track = tracks.remove(0);
+            self.play(track.clone());
+        }
         
-        let sink = audio::play_track(&self.output, &track.path);
-        self.now_playing = Some(NowPlaying {
-            sink: sink.unwrap(),
-            track: track,
-        });
+        self.queue.append(&mut tracks.clone());
+        
+    }
+        
+    pub fn play(&mut self, track: Track) {
+
+        self.player
+            .play_track(&track.path)
+            .expect("playback failed");
+
+        self.now_playing.track = Some(track);
+        self.was_playing = true;
+        
     }
 
     pub fn pause(&mut self) {
-        if let Some(np) = &self.now_playing {
-            np.sink.pause();
-        }
+        self.player.pause();
     }
 
     pub fn resume(&mut self) {
-        if let Some(np) = &self.now_playing {
-            np.sink.play();
-        }
+        self.player.resume();
     }
 
     pub fn stop(&mut self) {
-        if let Some(np) = &self.now_playing {
-            np.sink.stop();
-            self.now_playing = None;
+        self.player.stop();
+        self.queue.clear();
+        self.now_playing.track = None;
+    }
+
+    pub fn play_next(&mut self) {
+        if !self.queue.is_empty() {
+            let track = self.queue.remove(0);
+            self.play(track);
+        } else {
+            self.stop();
         }
     }
 
     pub fn toggle_play_pause(&mut self) {
-        if let Some(np) = &self.now_playing {
-            if np.sink.is_paused() {
-                np.sink.play();   // resume if paused
-            } else {
-                np.sink.pause();  // pause if playing
-            }
+        match self.player.is_paused() {
+            true => self.player.resume(),
+            false => self.player.pause(), 
         }
     }
 }

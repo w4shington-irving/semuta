@@ -2,7 +2,11 @@ use crate::app::{App};
 use crate::ui::{View};
 use crate::db;
 use crate::model::identifier::{ArtistIdentifier, AlbumIdentifier};
-use ratatui::widgets::ListItem;
+use ratatui::{
+    layout::{Constraint, Direction, Layout},
+    style::{Color, Style},
+    widgets::{Block, Borders, Gauge, Paragraph, ListItem},
+};
 
 /// Prebuilt UI content for library panel
 pub struct LibraryPanel<'a> {
@@ -16,19 +20,51 @@ pub struct QueuePanel<'a> {
 }
 
 pub struct NowPlayingPanel {
-    pub text: String,
+    pub title: Paragraph<'static>,
+    pub progress: Option<Gauge<'static>>,
 }
 
-/// Build the Now Playing panel
 pub fn build_now_playing(app: &App) -> NowPlayingPanel {
-    let text = if let Some(track) = &app.now_playing.track {
-        let number = track.track_number.unwrap_or(0);
-        format!("▶ {}. {}", number, track.title)
-    } else {
-        "No track playing".to_string()
-    };
+    if let Some(now) = &app.now_playing {
+        // Track info
+        let track_title = &now.track.title;
 
-    NowPlayingPanel { text }
+        let total = now.track.duration_secs.max(1); // avoid div by 0
+        let elapsed = now.position.min(total as u64);
+        let ratio = elapsed as f64 / total as f64;
+
+        // Title paragraph (centered)
+        let title = Paragraph::new(track_title.clone())
+            .block(Block::default().borders(Borders::NONE))
+            .alignment(ratatui::layout::Alignment::Center);
+
+        // Bottom progress row
+        let play_symbol = if now.paused { "⏸" } else { "▶" };
+        let elapsed_str = format!("{:02}:{:02}", elapsed / 60, elapsed % 60);
+        let total_str = format!("{:02}:{:02}", total / 60, total % 60);
+        let label = format!("{} {} / {}", play_symbol, elapsed_str, total_str);
+
+        let progress = Gauge::default()
+            .ratio(ratio)
+            .label(label)
+            .block(Block::default().borders(Borders::NONE))
+            .gauge_style(Style::default().fg(Color::LightGreen));
+
+        NowPlayingPanel {
+            title,
+            progress: Some(progress),
+        }
+    } else {
+        // No track playing: only show a placeholder
+        let title = Paragraph::new("No track playing")
+            .block(Block::default().borders(Borders::NONE))
+            .alignment(ratatui::layout::Alignment::Center);
+
+        NowPlayingPanel {
+            title,
+            progress: None, // no gauge
+        }
+    }
 }
 
 /// Build everything needed for rendering

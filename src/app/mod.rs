@@ -1,4 +1,5 @@
-use std::time::Duration;
+
+use crate::model::track;
 use crate::ui::{View, input::Selected};
 use crate::model::{track::Track, album::Album, artist::Artist, identifier::{ArtistIdentifier, AlbumIdentifier}};
 use crate::db::{self, tracks};
@@ -7,19 +8,22 @@ use rodio::queue;
 use rodio::{OutputStream, Sink, stream::OutputStreamBuilder};
 use std::sync::Arc;
 use audio::Player;
+use std::time::{Instant, Duration};
 
 
 pub struct NowPlaying {
         // controls playback
-    pub track: Option<Track>,
+    pub track: Track,
     pub position: u64,
+    pub paused: bool,
 }
 
 impl NowPlaying {
-    pub fn new() -> Self {
+    pub fn new(track: Track) -> Self {
         Self {
-            track: None,
+            track: track,
             position: 0,
+            paused: false,
         }
     }
 }
@@ -38,7 +42,7 @@ pub struct App {
     pub list_state: ListState,
 
     pub player: Player,
-    pub now_playing: NowPlaying,
+    pub now_playing:  Option<NowPlaying>,
     was_playing: bool,
 }
 
@@ -53,12 +57,31 @@ impl App {
             list_state: ListState::default(),
             player: Player::new().expect("Failed to create audio player"),
             queue: Vec::new(),
-            now_playing: NowPlaying::new(),
+            now_playing: None,
             was_playing: false,
         }
     }
     
+    pub fn start_track(&mut self, track: Track) {
+        self.now_playing = Some(NowPlaying {
+            track,
+            position: 0,
+            paused: false,
+        });
+    }
+
+    pub fn tick(&mut self, dt: u64) {
+        if let Some(now) = &mut self.now_playing {
+            if !now.paused {
+                let total = now.track.duration_secs;
+                now.position = (now.position + dt).min(total as u64);
+            }
+        }
+    }
+
     pub fn update(&mut self) {
+
+        self.tick(1);
 
         let is_playing_now =
             !self.player.is_idle() && !self.player.is_paused();
@@ -74,7 +97,7 @@ impl App {
 
     fn on_track_finished(&mut self) {
         // For now, just clear state
-        self.now_playing.track = None;
+        self.now_playing = None;
 
         if !self.queue.is_empty() {
             // Play next track
@@ -118,23 +141,29 @@ impl App {
             .play_track(&track.path)
             .expect("playback failed");
 
-        self.now_playing.track = Some(track);
+        self.now_playing = Some(NowPlaying::new(track));
         self.was_playing = true;
         
     }
 
     pub fn pause(&mut self) {
         self.player.pause();
+        self.now_playing.as_mut().unwrap().paused = true;
+    }
+
+    pub fn clear_queue(&mut self) {
+        self.queue.clear();
     }
 
     pub fn resume(&mut self) {
         self.player.resume();
+        self.now_playing.as_mut().unwrap().paused = false;
     }
 
     pub fn stop(&mut self) {
         self.player.stop();
         self.queue.clear();
-        self.now_playing.track = None;
+        self.now_playing = None;
     }
 
     pub fn play_next(&mut self) {
@@ -148,8 +177,8 @@ impl App {
 
     pub fn toggle_play_pause(&mut self) {
         match self.player.is_paused() {
-            true => self.player.resume(),
-            false => self.player.pause(), 
+            true => self.resume(),
+            false => self.pause(), 
         }
     }
 }

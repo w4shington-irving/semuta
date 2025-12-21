@@ -1,14 +1,13 @@
 use ratatui::{
     backend::Backend,
     layout::{Constraint, Direction, Layout},
-    widgets::{Block, Borders, List, ListItem, Paragraph},
+    widgets::{Gauge, Block, Borders, List, ListItem, Paragraph},
     Frame,
 };
 
 use crate::{model::artist, ui::View, ui::build::{build_library_panel, build_queue_panel, build_now_playing}};
 use crate::app::{App};
-use crate::model::identifier::{ArtistIdentifier, AlbumIdentifier};
-use crate::db;
+
 
 pub fn render_ui(f: &mut Frame, app: &mut App) {
     let chunks = Layout::default()
@@ -39,8 +38,13 @@ pub fn render_ui(f: &mut Frame, app: &mut App) {
     // Bottom: now playing
     let now_playing_panel = build_now_playing(app);
 
-    let now_playing_widget = Paragraph::new(now_playing_panel.text)
-        .block(Block::default().borders(Borders::ALL).title("Now Playing"));
+    let bottom_chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Length(1), Constraint::Length(1)])
+        .split(chunks[1]);
 
-    f.render_widget(now_playing_widget, chunks[1]);
+    f.render_widget(now_playing_panel.title, bottom_chunks[0]);
+    if let Some(progress) = &now_playing_panel.progress {
+        f.render_widget(progress, bottom_chunks[1]);
+    }
 }

@@ -1,15 +1,21 @@
 use std::io;
 use crossterm::{
     execute,
-    terminal::{enable_raw_mode, disable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen, Clear, ClearType},
+    terminal::{self, Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 
 };
+
+use std::time::Duration;
+use crossterm::event::{poll, read, Event, KeyCode};
+
 use ratatui::{
     backend::CrosstermBackend,
     Terminal,
 };
 
-use crate::app::App;
+use std::sync::{Arc, Mutex};
+
+use crate::app::{self, App};
 use crate::ui::render::render_ui;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -26,38 +32,41 @@ pub mod build;
 
 
 
-pub fn start() -> io::Result<()> {
+pub fn run(app: Arc<Mutex<App>>) -> io::Result<()> {
     enable_raw_mode()?;
-
-    
-
     let mut stdout = io::stdout();
     execute!(stdout, Clear(ClearType::All))?;
     execute!(stdout, EnterAlternateScreen)?;
 
     let backend = CrosstermBackend::new(stdout);
-    let mut terminal = Terminal::new(backend)?; // ← FIX IS HERE
+    let mut terminal = Terminal::new(backend)?;
 
-    let mut app = App::new();
-    app.load_artists();
+    {
+        let mut app = app.lock().unwrap();
+        app.load_artists();
+    }
 
-    
-    
     loop {
-        terminal.draw(|f| {
-            render_ui(f, &mut app);
-        })?;
-
-        if let crossterm::event::Event::Key(key_event) = crossterm::event::read()? {
-            
-            input::handle_key(key_event.code, &mut app);
+        // Draw UI
+        {
+            let mut app = app.lock().unwrap();
+            terminal.draw(|f| render_ui(f, &mut app))?;
         }
 
-        app.update();
+        // Non-blocking input with timeout
+        if poll(Duration::from_millis(100))? {
+            if let Event::Key(key_event) = read()? {
+                let mut app = app.lock().unwrap();
+                input::handle_key(key_event.code, &mut app);
+            }
+        }
+
+        // Now the loop can continue even if no input
+        // This allows the timer thread to update app.now_playing.elapsed
     }
 
     disable_raw_mode()?;
     execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
-
     Ok(())
 }
+

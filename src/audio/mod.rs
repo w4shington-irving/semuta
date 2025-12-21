@@ -5,7 +5,7 @@ use rodio::{OutputStream, Decoder, Sink};
 use std::sync::Arc;
 use crate::model::track::{self, Track};
 use std::path::Path;
-
+use std::time::{Instant, Duration};
 
 
 use rodio::OutputStreamBuilder;
@@ -24,6 +24,8 @@ impl Player {
             sink,
         })
     }
+
+    
 
     /// Non-blocking, single-track playback
     pub fn play_track<P: AsRef<Path>>(

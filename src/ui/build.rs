@@ -82,7 +82,7 @@ pub fn build_queue_panel(app: &App) -> QueuePanel {
     let items: Vec<ListItem> = app.queue
         .iter()
         .map(|t| {
-            let label = format!("{} - {}, {}. {}", t.artist_name, t.album_name, t.track_number.unwrap_or(0), t.title);
+            let label = format!("{} ({} - {})", t.title, t.artist_name, t.album_name);
             ListItem::new(label)
         })
         .collect();

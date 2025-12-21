@@ -1,7 +1,6 @@
-use crate::db::artists::{add_artist, artist_exists, get_artist_internal};
+use crate::db::artists::{add_artist, artist_exists};
 use crate::db::albums::{add_album, album_exists};
 use crate::db::tracks::{add_track, track_exists};
-use crate::model::{album, artist};
 use crate::model::track::Track;
 use crate::model::identifier::{ArtistIdentifier, AlbumIdentifier, TrackIdentifier};
 
@@ -27,11 +26,12 @@ pub fn get_album(album_identifier: &AlbumIdentifier) -> rusqlite::Result<crate::
     albums::get_album_internal(&conn, album_identifier)
 }
 
+/* 
 pub fn get_track(track_identifier: &TrackIdentifier) -> rusqlite::Result<crate::model::track::Track> {
     let conn = rusqlite::Connection::open("library.db")?;
     tracks::get_track_internal(&conn, track_identifier)
 }
-
+*/
 
 
 pub fn append(track: &Track) -> rusqlite::Result<()> {

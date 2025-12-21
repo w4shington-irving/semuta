@@ -32,14 +32,13 @@ fn main() {
         }
     });
 
-    ui::run(Arc::clone(&app));
+    ui::run(Arc::clone(&app)).expect("Failed to generate TUI");
 
     
     
 }
 /*
 TODO:
-- Add now playing progress bar
 - Add playlists
 - Fix breaking tracks (eg. Pink Floyd - The Dark Side of the Moon)
  */

@@ -3,7 +3,6 @@ use crate::ui::{View};
 use crate::db;
 use crate::model::identifier::{ArtistIdentifier, AlbumIdentifier};
 use ratatui::{
-    layout::{Constraint, Direction, Layout},
     style::{Color, Style},
     widgets::{Block, Borders, Gauge, Paragraph, ListItem},
 };
@@ -68,7 +67,7 @@ pub fn build_now_playing(app: &App) -> NowPlayingPanel {
 }
 
 /// Build everything needed for rendering
-pub fn build_library_panel(app: &App) -> LibraryPanel {
+pub fn build_library_panel(app: &'_ App) -> LibraryPanel<'_> {
     let items: Vec<String> = match app.view {
         View::Artists => app.artists.iter().map(|a| a.name.clone()).collect(),
         View::Albums { .. } => app.albums.iter().map(|a| a.title.clone()).collect(),
@@ -82,7 +81,7 @@ pub fn build_library_panel(app: &App) -> LibraryPanel {
                     format!("{}. {}", number, t.title)
                 })
                 .collect()
-        }
+        },
         _ => Vec::new(),
     };
 
@@ -114,7 +113,7 @@ pub fn build_library_panel(app: &App) -> LibraryPanel {
 }
 
 /// Build the queue panel
-pub fn build_queue_panel(app: &App) -> QueuePanel {
+pub fn build_queue_panel(app: &'_ App) -> QueuePanel<'_> {
     let items: Vec<ListItem> = app.queue
         .iter()
         .map(|t| {

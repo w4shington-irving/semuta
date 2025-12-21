@@ -1,12 +1,12 @@
 use std::io;
 use crossterm::{
     execute,
-    terminal::{self, Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
+    terminal::{Clear, ClearType, EnterAlternateScreen, enable_raw_mode},
 
 };
 
 use std::time::Duration;
-use crossterm::event::{poll, read, Event, KeyCode};
+use crossterm::event::{poll, read, Event};
 
 use ratatui::{
     backend::CrosstermBackend,
@@ -15,7 +15,7 @@ use ratatui::{
 
 use std::sync::{Arc, Mutex};
 
-use crate::app::{self, App};
+use crate::app::{App};
 use crate::ui::render::render_ui;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -64,9 +64,5 @@ pub fn run(app: Arc<Mutex<App>>) -> io::Result<()> {
         // Now the loop can continue even if no input
         // This allows the timer thread to update app.now_playing.elapsed
     }
-
-    disable_raw_mode()?;
-    execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
-    Ok(())
 }
 

@@ -1,14 +1,8 @@
 
 use std::fs::File;
 use std::io::BufReader;
-use rodio::{OutputStream, Decoder, Sink};
-use std::sync::Arc;
-use crate::model::track::{self, Track};
+use rodio::{OutputStream, OutputStreamBuilder, Decoder, Sink};
 use std::path::Path;
-use std::time::{Instant, Duration};
-
-
-use rodio::OutputStreamBuilder;
 
 pub struct Player {
     _stream: OutputStream, // must live as long as audio plays
@@ -67,21 +61,6 @@ impl Player {
 
 
 
-pub fn play_queue(
-    stream: &OutputStream,
-    queue: &Vec<Track>,
-) -> Result<Arc<Sink>, Box<dyn std::error::Error>> {
-    // Create a sink connected to the existing audio device
-    let sink = Sink::connect_new(stream.mixer());
-
-    // Open audio file
-    for track in queue {
-        let file = File::open(&track.path)?;
-        let source = Decoder::new(BufReader::new(file))?;
-        sink.append(source);
-    }
-    Ok(Arc::new(sink))
-}
 
 
 

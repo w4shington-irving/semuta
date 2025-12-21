@@ -1,4 +1,4 @@
-use crate::{db::get_artist, model::{album, identifier::{AlbumIdentifier, ArtistIdentifier, TrackIdentifier}, track::Track}};
+use crate::{db::get_artist, model::{identifier::{AlbumIdentifier, ArtistIdentifier, TrackIdentifier}, track::Track}};
 use crate::db::get_album;
 use rusqlite::Connection;
 
@@ -32,7 +32,7 @@ pub fn track_exists(conn: &Connection, id: TrackIdentifier) -> rusqlite::Result<
     }
 }
 
-
+/* 
 pub fn get_track_internal(conn: &rusqlite::Connection, identifier: &TrackIdentifier) -> rusqlite::Result<Track> {
     let mut stmt = conn.prepare("SELECT id, album_id, title, track_number, duration_secs, path FROM tracks WHERE id = ?1 OR (title = ?2 AND album_id = ?3)")?;
     match identifier {
@@ -80,7 +80,7 @@ pub fn get_track_internal(conn: &rusqlite::Connection, identifier: &TrackIdentif
         },
     }
 }
-
+*/
 pub fn get_tracks_by_album_internal(conn: &rusqlite::Connection, album_identifier: &AlbumIdentifier) -> rusqlite::Result<Vec<Track>> {
     match album_identifier {
         AlbumIdentifier::Id(id) => {

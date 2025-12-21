@@ -1,14 +1,11 @@
 
-use crate::model::track;
+
 use crate::ui::{View, input::Selected};
 use crate::model::{track::Track, album::Album, artist::Artist, identifier::{ArtistIdentifier, AlbumIdentifier}};
-use crate::db::{self, tracks};
+use crate::db;
 use crate::audio;
-use rodio::queue;
-use rodio::{OutputStream, Sink, stream::OutputStreamBuilder};
-use std::sync::Arc;
 use audio::Player;
-use std::time::{Instant, Duration};
+
 
 
 pub struct NowPlaying {
@@ -60,14 +57,6 @@ impl App {
             now_playing: None,
             was_playing: false,
         }
-    }
-    
-    pub fn start_track(&mut self, track: Track) {
-        self.now_playing = Some(NowPlaying {
-            track,
-            position: 0,
-            paused: false,
-        });
     }
 
     pub fn tick(&mut self, dt: u64) {
@@ -162,7 +151,7 @@ impl App {
 
     pub fn stop(&mut self) {
         self.player.stop();
-        self.queue.clear();
+        self.clear_queue();
         self.now_playing = None;
     }
 

@@ -1,11 +1,10 @@
 use ratatui::{
-    backend::Backend,
     layout::{Constraint, Direction, Layout},
-    widgets::{Gauge, Block, Borders, List, ListItem, Paragraph},
+    widgets::{Block, Borders, List},
     Frame,
 };
 
-use crate::{model::artist, ui::View, ui::build::{build_library_panel, build_queue_panel, build_now_playing}};
+use crate::{ui::build::{build_library_panel, build_queue_panel, build_now_playing}};
 use crate::app::{App};
 
 

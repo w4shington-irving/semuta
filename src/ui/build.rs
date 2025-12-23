@@ -23,6 +23,11 @@ pub struct NowPlayingPanel {
     pub progress: Option<Gauge<'static>>,
 }
 
+pub struct MenuPanel {
+    pub items: Vec<ListItem<'static>>,
+}
+
+
 pub fn build_now_playing(app: &App) -> NowPlayingPanel {
     if let Some(now) = &app.now_playing {
         // Track info
@@ -79,6 +84,7 @@ pub fn build_library_panel(app: &'_ App) -> LibraryPanel<'_> {
                 .map(|t| {
                     let number = t.track_number.unwrap_or(0);
                     format!("{}. {}", number, t.title)
+                    
                 })
                 .collect()
         },

@@ -8,6 +8,7 @@ use crate::{ui::build::{build_library_panel, build_queue_panel, build_now_playin
 use crate::app::{App};
 
 
+
 pub fn render_ui(f: &mut Frame, app: &mut App) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
